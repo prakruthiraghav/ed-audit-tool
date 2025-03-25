@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String    @default("")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bio           String?
+  organization  String?
+  jobTitle      String?
+  accounts      Account[]
+  audits         Audit[]
+  sessions      Session[]
+  photos        Photo[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Audit {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  isPublic    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userId      String
+  filterId    String
+  filter      Filter     @relation(fields: [filterId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responses   Response[]
+  photoId     String?
+  photo       Photo?     @relation(fields: [photoId], references: [id])
+
+  @@index([userId])
+  @@index([photoId])
+  @@index([filterId])
+}
+
+model Filter {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  category    String?
+  audits      Audit[]
+  questions   Question[]
+  photos      Photo[]
+}
+
+model Question {
+  id        String     @id @default(cuid())
+  text      String
+  type      String
+  required  Boolean    @default(false)
+  options   String?
+  filterId  String
+  filter    Filter     @relation(fields: [filterId], references: [id], onDelete: Cascade)
+  responses Response[]
+}
+
+model Response {
+  id         String   @id @default(cuid())
+  value      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  auditId    String
+  questionId String
+  audit      Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  userId    String
+  filterId  String
+  url       String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  filter    Filter   @relation(fields: [filterId], references: [id])
+  audits    Audit[]
+
+  @@index([userId])
+  @@index([filterId])
+}
