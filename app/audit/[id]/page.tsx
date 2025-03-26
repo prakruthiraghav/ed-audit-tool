@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import PageTransition from "@/app/components/PageTransition";
+import PageTransition from "../../components/PageTransition";
 
 interface Audit {
   id: string;

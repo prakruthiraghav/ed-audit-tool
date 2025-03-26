@@ -25,7 +25,7 @@ export default function PhotoPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/auth/login");
     } else if (status === "authenticated") {
       fetchPhoto();
     }

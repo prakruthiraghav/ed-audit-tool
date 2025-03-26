@@ -89,7 +89,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   required
                   className="mt-1 block w-full rounded-xl border-purple-200 bg-white/50 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm transition-colors"
-                  placeholder="Email address"
+                  //placeholder="Email address"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -110,7 +110,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   required
                   className="mt-1 block w-full rounded-xl border-purple-200 bg-white/50 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm transition-colors"
-                  placeholder="Password"
+                  //placeholder="Password"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })

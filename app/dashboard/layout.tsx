@@ -12,7 +12,7 @@ export default function DashboardLayout({
   const { status } = useSession({
     required: true,
     onUnauthenticated() {
-      redirect("/login");
+      redirect("/auth/login");
     },
   });
 

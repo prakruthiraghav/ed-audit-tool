@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       },
     });
 
-    console.log("Fetched photos:", photos.length);
+   // console.log("Fetched photos:", photos.length);
     return NextResponse.json(photos);
   } catch (error) {
     console.error("Error fetching photos:", error);

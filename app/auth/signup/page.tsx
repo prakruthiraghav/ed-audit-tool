@@ -90,7 +90,7 @@ export default function SignUpPage() {
                   type="text"
                   required
                   className="mt-1 block w-full rounded-xl border-purple-200 bg-white/50 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm transition-colors"
-                  placeholder="Full Name"
+                  //placeholder="Full Name"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -111,7 +111,7 @@ export default function SignUpPage() {
                   autoComplete="email"
                   required
                   className="mt-1 block w-full rounded-xl border-purple-200 bg-white/50 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm transition-colors"
-                  placeholder="Email address"
+                  //placeholder="Email address"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -132,7 +132,7 @@ export default function SignUpPage() {
                   autoComplete="new-password"
                   required
                   className="mt-1 block w-full rounded-xl border-purple-200 bg-white/50 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm transition-colors"
-                  placeholder="Password"
+                  //placeholder="Password"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -153,7 +153,7 @@ export default function SignUpPage() {
                   autoComplete="new-password"
                   required
                   className="mt-1 block w-full rounded-xl border-purple-200 bg-white/50 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm transition-colors"
-                  placeholder="Confirm Password"
+                  //placeholder="Confirm Password"
                   value={formData.confirmPassword}
                   onChange={(e) =>
                     setFormData({

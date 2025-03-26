@@ -2,9 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import * as tf from "@tensorflow/tfjs";
-import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
-import "@mediapipe/face_mesh";
 import Webcam from "react-webcam";
 
 interface Photo {
@@ -128,6 +125,33 @@ const FILTER_EFFECTS: Record<
       data[i] = avg;
       data[i + 1] = avg;
       data[i + 2] = avg;
+    }
+    ctx.putImageData(imageData, 0, 0);
+  },
+  Brightness: (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number
+  ) => {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = Math.min(255, data[i] * 1.5);
+      data[i + 1] = Math.min(255, data[i + 1] * 1.5);
+      data[i + 2] = Math.min(255, data[i + 2] * 1.5);
+    }
+    ctx.putImageData(imageData, 0, 0);
+  },
+  Contrast: (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    const contrast = 1.5;
+    const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = factor * (data[i] - 128) + 128;
+      data[i + 1] = factor * (data[i + 1] - 128) + 128;
+      data[i + 2] = factor * (data[i + 2] - 128) + 128;
     }
     ctx.putImageData(imageData, 0, 0);
   },
@@ -459,25 +483,61 @@ const FILTER_EFFECTS: Record<
 
 export default function WebcamFilters({ onPhotoCapture }: WebcamFiltersProps) {
   const { data: session } = useSession();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [filters, setFilters] = useState<Filter[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<string>("");
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [error, setError] = useState("");
-  const [retryCount, setRetryCount] = useState(0);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [capturing, setCapturing] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [description, setDescription] = useState("");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const webcamRef = useRef<Webcam>(null);
 
   useEffect(() => {
     fetchFilters();
   }, []);
+
+  useEffect(() => {
+    let animationFrame: number;
+
+    const processFrame = () => {
+      if (!webcamRef.current?.video || !canvasRef.current || !selectedFilter)
+        return;
+
+      const video = webcamRef.current.video;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        // Set canvas dimensions to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Draw the current video frame
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Apply the selected filter
+        const filter = filters.find((f) => f.id === selectedFilter);
+        if (filter && FILTER_EFFECTS[filter.name]) {
+          FILTER_EFFECTS[filter.name](ctx, canvas.width, canvas.height);
+        }
+      }
+
+      animationFrame = requestAnimationFrame(processFrame);
+    };
+
+    if (selectedFilter) {
+      processFrame();
+    }
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [selectedFilter, filters]);
 
   const fetchFilters = async () => {
     try {
@@ -487,152 +547,21 @@ export default function WebcamFilters({ onPhotoCapture }: WebcamFiltersProps) {
       setFilters(data);
     } catch (error) {
       console.error("Error fetching filters:", error);
+      // Set default filters
+      setFilters([
+        { id: "1", name: "Normal" },
+        { id: "2", name: "Black & White" },
+        { id: "3", name: "Brightness" },
+        { id: "4", name: "Contrast" },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const initializeWebcam = async () => {
-    try {
-      // First, stop any existing tracks
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-
-      // Request camera access with fallback options
-      const stream = await navigator.mediaDevices
-        .getUserMedia({
-          video: {
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-            facingMode: "user",
-            frameRate: { ideal: 30 },
-          },
-          audio: false,
-        })
-        .catch(async () => {
-          // Fallback to basic constraints if detailed ones fail
-          return await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false,
-          });
-        });
-
-      if (!videoRef.current) return;
-
-      videoRef.current.srcObject = stream;
-
-      // Wait for video to be ready
-      await new Promise((resolve, reject) => {
-        if (!videoRef.current) return reject();
-        videoRef.current.onloadedmetadata = resolve;
-        videoRef.current.onerror = reject;
-      });
-
-      await videoRef.current.play();
-      setIsWebcamActive(true);
-      setError("");
-      setRetryCount(0);
-    } catch (err) {
-      console.error("Webcam error:", err);
-      if (err instanceof DOMException) {
-        switch (err.name) {
-          case "NotAllowedError":
-            setError(
-              "Camera access denied. Please allow camera access in your browser settings and refresh the page."
-            );
-            break;
-          case "NotFoundError":
-            setError(
-              "No camera found. Please make sure your device has a working camera."
-            );
-            break;
-          case "NotReadableError":
-            setError(
-              "Camera is in use by another application. Please close other apps using the camera."
-            );
-            break;
-          case "AbortError":
-            if (retryCount < 3) {
-              setError("Camera initialization failed. Retrying...");
-              setRetryCount((prev) => prev + 1);
-              // Retry after a short delay
-              setTimeout(() => {
-                initializeWebcam();
-              }, 1000);
-            } else {
-              setError(
-                "Unable to access camera. Please refresh the page or try a different browser."
-              );
-            }
-            break;
-          default:
-            setError(
-              "Unable to access webcam. Please make sure you have granted permission."
-            );
-        }
-      } else {
-        setError("An unexpected error occurred. Please refresh the page.");
-      }
-    }
-  };
-
-  useEffect(() => {
-    let animationFrame: number;
-
-    const startVideoProcessing = () => {
-      if (!videoRef.current || !canvasRef.current || !isWebcamActive) return;
-
-      const processFrame = () => {
-        if (!videoRef.current || !canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-
-        if (ctx) {
-          // Draw the current video frame
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-
-          // Find the selected filter
-          const filter = filters.find((f) => f.id === selectedFilter);
-          if (filter && FILTER_EFFECTS[filter.name]) {
-            FILTER_EFFECTS[filter.name](ctx, canvas.width, canvas.height);
-          }
-        }
-
-        animationFrame = requestAnimationFrame(processFrame);
-      };
-
-      processFrame();
-    };
-
-    initializeWebcam().then(() => {
-      if (isWebcamActive) {
-        startVideoProcessing();
-      }
-    });
-
-    return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
-  }, [selectedFilter, isWebcamActive, filters]);
-
-  const handleRetry = () => {
-    setRetryCount(0);
-    setError("");
-    initializeWebcam();
-  };
-
   const capture = useCallback(() => {
-    if (webcamRef.current?.video) {
-      const imageSrc = webcamRef.current.getScreenshot();
+    if (canvasRef.current) {
+      const imageSrc = canvasRef.current.toDataURL("image/jpeg");
       if (imageSrc) {
         setCapturedImage(imageSrc);
         setShowForm(true);
@@ -697,10 +626,6 @@ export default function WebcamFilters({ onPhotoCapture }: WebcamFiltersProps) {
     <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-purple-100">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-green-500 mb-3">
-            Fun Camera Filters
-          </h2>
-
           {/* Filter Selection */}
           <div className="flex flex-wrap gap-2 mb-4">
             {filters.map((filter) => (
@@ -733,30 +658,13 @@ export default function WebcamFilters({ onPhotoCapture }: WebcamFiltersProps) {
                   }}
                   className="w-full h-full object-cover"
                   onUserMedia={() => {
-                    if (webcamRef.current?.video) {
-                      const video = webcamRef.current.video;
-                      if (canvasRef.current) {
-                        canvasRef.current.width = video.videoWidth;
-                        canvasRef.current.height = video.videoHeight;
-                        // Draw initial frame
-                        const ctx = canvasRef.current.getContext("2d");
-                        if (ctx) {
-                          ctx.drawImage(
-                            video,
-                            0,
-                            0,
-                            canvasRef.current.width,
-                            canvasRef.current.height
-                          );
-                        }
-                      }
-                    }
+                    setIsWebcamActive(true);
                   }}
                 />
                 <canvas
                   ref={canvasRef}
                   className="absolute top-0 left-0 w-full h-full"
-                  style={{ display: "none" }}
+                  style={{ display: selectedFilter ? "block" : "none" }}
                 />
                 {selectedFilter && (
                   <button

@@ -93,10 +93,10 @@ export default function DashboardPage() {
               {/* Header */}
               <div>
                 <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-green-500">
-                  Welcome to EduAudit
+                  Welcome to Ed Audit
                 </h1>
                 <p className="mt-2 text-gray-600">
-                  Your educational audit and filter management platform
+                  This is your auditing playground!
                 </p>
               </div>
 

@@ -27,7 +27,7 @@ export default function AuditsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/auth/login");
     } else if (status === "authenticated") {
       fetchAudits();
     }
@@ -64,11 +64,11 @@ export default function AuditsPage() {
               {/* Header */}
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-green-500">
+                  <h1 className="text-3xl font-bold bg-clip-text text-purple-600">
                     My Audits
                   </h1>
                   <p className="mt-2 text-gray-600">
-                    Manage and view your educational audits
+                    Manage and view your audits
                   </p>
                 </div>
                 <Link

@@ -42,7 +42,7 @@ export default function CreateAuditPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/auth/login");
     } else if (status === "authenticated") {
       fetchFilters();
       fetchPhotos();

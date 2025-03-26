@@ -57,3 +57,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea {
+    @apply cursor-text px-4 py-2 w-full rounded-xl border border-purple-200 
+    bg-white/50 shadow-sm transition-all duration-200 ease-in-out
+    placeholder:text-gray-400
+    focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none;
+  }
+
+  /* Style for disabled state */
+  input:disabled,
+  textarea:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-100;
+  }
+
+  /* Remove default autofill styles */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px white inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}

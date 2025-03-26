@@ -12,7 +12,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login");
+      router.push("/auth/login");
     }
   }, [status, router]);
 
@@ -33,7 +33,7 @@ export default function ProfilePage() {
             <div className="space-y-8">
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800">
+                  <h1 className="text-3xl font-bold text-purple-600">
                     My Profile
                   </h1>
                   <p className="mt-2 text-gray-600">
