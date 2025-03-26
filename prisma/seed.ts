@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-async function main() {
+export async function seed() {
   // Create filters
   const filters = await Promise.all([
     prisma.filter.create({
@@ -115,11 +115,14 @@ async function main() {
   console.log("Seed completed successfully");
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Only run if called directly
+if (require.main === module) {
+  seed()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
