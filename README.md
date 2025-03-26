@@ -48,7 +48,7 @@ npx prisma generate
 # Run database migrations
 npx prisma migrate dev
 
-# Seed the database (optional)
+# Seed the database 
 npm run seed
 ```
 
