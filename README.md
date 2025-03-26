@@ -91,6 +91,3 @@ The application will be available at `http://localhost:3000`
 - `npm run lint` - Run ESLint
 - `npm run seed` - Seed the database
 
-## License
-
-[Your License Here]
