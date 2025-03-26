@@ -50,7 +50,12 @@ export default function EditProfilePage() {
       }
 
       setSuccess("Profile updated successfully!");
-      await update(); // Update the session with new data
+      await update({
+        user: {
+          ...session?.user,
+          name: formData.name,
+        },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update profile");
     } finally {
