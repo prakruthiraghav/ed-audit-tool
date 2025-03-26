@@ -1,17 +1,19 @@
 # ED Audit Tool
 
+A Next.js application for educational audit management with webcam integration and AI-powered features.
+
+## Prerequisites
 
 - Node.js 18.x or later
-- npm or yarn
-- A webcam (for using the filter features)
-- A modern web browser
+- PostgreSQL database
+- npm or yarn package manager
 
-## Getting Started
+## Setup Instructions
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/ed-audit-tool.git
+git clone <repository-url>
 cd ed-audit-tool
 ```
 
@@ -23,23 +25,34 @@ npm install
 yarn install
 ```
 
-3. Set up environment variables:
-   Create a `.env.local` file in the root directory with the following variables:
+3. Set up your environment variables:
+   Create a `.env` file in the root directory with the following variables:
 
 ```env
-DATABASE_URL="your_database_url"
-NEXTAUTH_SECRET="your_nextauth_secret"
-NEXTAUTH_URL="http://localhost:3000"
+DATABASE_URL="postgresql://username:password@localhost:5432/ed_audit_db?schema=public"
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key-here
 ```
+
+Replace the values with your own:
+
+- `username` and `password` with your PostgreSQL credentials
+- `your-secret-key-here` with a secure random string
 
 4. Set up the database:
 
 ```bash
+# Generate Prisma client
 npx prisma generate
-npx prisma db push
+
+# Run database migrations
+npx prisma migrate dev
+
+# Seed the database (optional)
+npm run seed
 ```
 
-5. Run the development server:
+5. Start the development server:
 
 ```bash
 npm run dev
@@ -47,21 +60,37 @@ npm run dev
 yarn dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+The application will be available at `http://localhost:3000`
 
-## Project Structure
+## Features
 
-```
-ed-audit-tool/
-├── app/
-│   ├── api/           # API routes
-│   ├── auth/          # Authentication pages
-│   ├── components/    # Reusable components
-│   ├── dashboard/     # Dashboard page
-│   ├── gallery/       # Photo gallery
-│   └── filters/       # Filter management
-├── lib/               # Utility functions and configurations
-├── prisma/           # Database schema and migrations
-└── public/           # Static assets
-```
+- User authentication
+- Audit creation and management
+- Webcam integration with filters
+- Photo gallery
+- Dashboard with analytics
+- Public/Private audit visibility
 
+## Tech Stack
+
+- Next.js 14
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- NextAuth.js
+- TailwindCSS
+- Framer Motion
+- TensorFlow.js
+- MediaPipe
+
+## Development
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run seed` - Seed the database
+
+## License
+
+[Your License Here]
