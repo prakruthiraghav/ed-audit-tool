@@ -26,13 +26,8 @@ yarn install
 ```
 
 3. Set up your environment variables:
-   Create a `.env` file in the root directory with the following variables:
+   Create a `.env` file in the root directory
 
-```env
-DATABASE_URL="postgresql://username:password@localhost:5432/ed_audit_db?schema=public"
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key-here
-```
 
 Replace the values with your own:
 
